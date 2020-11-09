@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxCv.h"
+
+using namespace ofxCv;
 
 class ofApp : public ofBaseApp{
 
@@ -8,6 +11,8 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+        void update_painters();
+        void update_grabber();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -21,10 +26,26 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+    // Painter variables
     vector <ofPoint> painters;
     vector <ofVec2f> directions;
+    vector <int> white_count;
     int num_painters;
+    float max_speed;
+    int seed;
+    float p_size;
     
+    // Body variables
+    ofVideoGrabber grabber;
+    ofImage cam_grey;
+    ofImage bg_grey;
+    ofImage diff_img;
+    ofImage thresh_img;
+    
+    bool b_record_bg;
+    float threshold_val;
+    
+    // Screen variables
     ofFbo fbo;
     ofPixels p;
     
