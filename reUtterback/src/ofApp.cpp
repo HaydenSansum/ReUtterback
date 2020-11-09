@@ -6,9 +6,12 @@ void ofApp::setup(){
     // User choice constants
     num_painters = 500;
     p_size = 8;
-    max_speed = 3.0;
+    max_speed = 8.0;
+    min_speed = 3.0;
+    accel = 1.3;
     seed = 13;
-    threshold_val = 50; // Tweak based on ambient lighting and background
+    threshold_val = 60; // Tweak based on ambient lighting and background
+    draw_cam = true;
     
     // Invariant Constants
     screen_w = ofGetWidth();
@@ -25,6 +28,20 @@ void ofApp::setup(){
         float dir_x = ofRandom(-max_speed, max_speed);
         float dir_y = ofRandom(-max_speed, max_speed);
         
+        // CAP MIN SPEEDS
+        if (dir_x < 0 && dir_x > -min_speed) {
+            dir_x = -min_speed;
+        }
+        if (dir_y < 0 && dir_y > -min_speed) {
+            dir_y = -min_speed;
+        }
+        if (dir_x > 0 && dir_x < min_speed) {
+            dir_x = min_speed;
+        }
+        if (dir_y > 0 && dir_y < min_speed) {
+            dir_y = min_speed;
+        }
+        
         ofPoint cur_point = ofPoint(rand_x,rand_y,0);
         ofVec2f cur_dir = ofVec2f(dir_x, dir_y);
         
@@ -38,7 +55,7 @@ void ofApp::setup(){
     
     // Set up grabber and required images
 //    grabber.listDevices();
-    grabber.setDeviceID(0);
+    grabber.setDeviceID(1);
     grabber.initGrabber(screen_w, screen_h);
     
     cam_grey.allocate(grabber.getWidth(), grabber.getHeight(), OF_IMAGE_GRAYSCALE);
@@ -91,15 +108,17 @@ void ofApp::draw(){
     }
     
     // Draw webcam
-    ofPushMatrix();
-    ofSetColor(255);
-    ofScale(0.15,0.15);
-    grabber.draw(0, 0);
-    cam_grey.draw(0, grabber.getHeight());
-    bg_grey.draw(0, grabber.getHeight() * 2);
-    diff_img.draw(0, grabber.getHeight() * 3);
-    thresh_img.draw(0, grabber.getHeight() * 4);
-    ofPopMatrix();
+    if (draw_cam) {
+        ofPushMatrix();
+        ofSetColor(255);
+        ofScale(0.15,0.15);
+        grabber.draw(0, 0);
+        cam_grey.draw(0, grabber.getHeight());
+        bg_grey.draw(0, grabber.getHeight() * 2);
+        diff_img.draw(0, grabber.getHeight() * 3);
+        thresh_img.draw(0, grabber.getHeight() * 4);
+        ofPopMatrix();
+    }
     
 
 }
@@ -156,8 +175,8 @@ void ofApp::update_painters(){
         int brightness = thresh_img.getColor(cur_point.x, cur_point.y).getBrightness();
         if (brightness > 120) {
             if (white_count[i] > 2) {
-                directions[i][0] = directions[i][0] * 1.1;
-                directions[i][1] = directions[i][1] * 1.1;
+                directions[i][0] = directions[i][0] * accel;
+                directions[i][1] = directions[i][1] * accel;
             } else {
                 directions[i][0] = directions[i][0] * -1;
                 directions[i][1] = directions[i][1] * -1;
@@ -165,10 +184,18 @@ void ofApp::update_painters(){
             white_count[i] = white_count[i] + 1;
         } else {
             if (white_count[i] > 2) {
-                directions[i][0] = directions[i][0] / pow(1.1, (white_count[i] - 2));
-                directions[i][1] = directions[i][1] / pow(1.1, (white_count[i] - 2));
+                directions[i][0] = directions[i][0] / pow(accel, (white_count[i] - 2));
+                directions[i][1] = directions[i][1] / pow(accel, (white_count[i] - 2));
             }
             white_count[i] = 0;
+        }
+        
+        // Check for min speed and accelerate up if needs be
+        if (directions[i][0] > -min_speed && directions[i][0] < min_speed) {
+            directions[i][0] = directions[i][0] * accel;
+        }
+        if (directions[i][1] > -min_speed && directions[i][1] < min_speed) {
+            directions[i][1] = directions[i][1] * accel;
         }
         
         painters[i] = cur_point;

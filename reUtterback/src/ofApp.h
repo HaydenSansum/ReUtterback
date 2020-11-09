@@ -32,6 +32,8 @@ class ofApp : public ofBaseApp{
     vector <int> white_count;
     int num_painters;
     float max_speed;
+    float min_speed;
+    float accel;
     int seed;
     float p_size;
     
@@ -41,6 +43,7 @@ class ofApp : public ofBaseApp{
     ofImage bg_grey;
     ofImage diff_img;
     ofImage thresh_img;
+    bool draw_cam;
     
     bool b_record_bg;
     float threshold_val;
