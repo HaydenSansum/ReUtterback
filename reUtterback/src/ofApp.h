@@ -49,7 +49,6 @@ class ofApp : public ofBaseApp{
     ofImage bg_grey;
     ofImage diff_img;
     ofImage thresh_img;
-    bool draw_cam;
     bool draw_full_cam;
     bool negative;
     

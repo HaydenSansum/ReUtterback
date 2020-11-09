@@ -8,8 +8,7 @@ void ofApp::setup(){
     p_size = 4;
     seed = 13;
     threshold_val = 30; // Tweak based on ambient lighting and background
-    draw_cam = false;
-    draw_full_cam = true;
+    draw_full_cam = true; // Set Screen Width to be 1280
     negative = false; // If false push away from body, if true trap inside
     num_colors = 18; // Must match color list in function build sample colors
     brightness_scaler = 150;
@@ -29,13 +28,12 @@ void ofApp::setup(){
     
     // Invariant Constants
     if (draw_full_cam) {
-        screen_w = ofGetWidth() / 2;
+        screen_w = 1024;
         screen_h = ofGetHeight();
     } else {
         screen_w = ofGetWidth();
         screen_h = ofGetHeight();
     }
-    
     
     fbo.allocate(screen_w, screen_h, GL_RGBA);
     
@@ -80,6 +78,8 @@ void ofApp::setup(){
     // Set up grabber and required images
 //    grabber.listDevices();
     grabber.setDeviceID(1);
+    cout << screen_w << endl;
+    cout << screen_h << endl;
     grabber.initGrabber(screen_w, screen_h);
     
     cam_grey.allocate(grabber.getWidth(), grabber.getHeight(), OF_IMAGE_GRAYSCALE);
@@ -115,9 +115,19 @@ void ofApp::draw(){
     ofSeedRandom(seed);
     
     ofPushMatrix();
+    
     if(draw_full_cam) {
+        // Draw all cameras
+        ofPushMatrix();
+        ofSetColor(255);
+        ofScale(0.25, 0.25);
         grabber.draw(0, 0);
-        ofTranslate(screen_w,0);
+        cam_grey.draw(0, grabber.getHeight());
+        diff_img.draw(0, grabber.getHeight() * 2);
+        thresh_img.draw(0, grabber.getHeight() * 3);
+        ofPopMatrix();
+        
+        ofTranslate(256,0);
     }
     // Create trails through repeated background drawing
     ofSetColor(0,0,0,5);
@@ -135,20 +145,6 @@ void ofApp::draw(){
         
     }
     ofPopMatrix();
-    
-    // Draw webcam
-    if (draw_cam) {
-        ofPushMatrix();
-        ofSetColor(255);
-        ofScale(0.15,0.15);
-        grabber.draw(0, 0);
-        cam_grey.draw(0, grabber.getHeight());
-        bg_grey.draw(0, grabber.getHeight() * 2);
-        diff_img.draw(0, grabber.getHeight() * 3);
-        thresh_img.draw(0, grabber.getHeight() * 4);
-        ofPopMatrix();
-    }
-    
 
 }
 
